@@ -43,7 +43,8 @@ built on a clean, provider-pluggable architecture.
 - Lenient JSON handling for MangaDex's empty-object-as-array quirk.
 
 **Features**
-- **Home** — Continue reading, library preview, and a Popular discovery rail.
+- **Home** — Library preview rail plus a **Popular / Latest** discovery feed shown as a
+  vertical grid (chip-pill tabs; paginates as you scroll to the bottom).
 - **Search** — Debounced MangaDex search, infinite-scroll grid, loading/empty/error states.
 - **Details** — Cover, title, authors/artists, status, tags, description, favorite toggle,
   and the de-duplicated chapter list with read indicators; external chapters open in browser.

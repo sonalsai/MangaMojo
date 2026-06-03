@@ -41,7 +41,7 @@ shasum -a 256 -c releases/v1.0.0/mangamojo-v1.0.0.apk.sha256
 
 ### v1.0.0 checksum
 ```
-SHA-256: 64d1d95b3d06b8d14039859bc9e2b747090f647f6b71f71f0fbae7edc6f0af8a
+SHA-256: 98ab191326baed9143f23e711deb7913fef1225ff6a25beb106bb7ac90c534ea
 ```
 
 ---

@@ -24,7 +24,7 @@ bookmarks, reading progress, cached metadata) lives on-device.
 
 ## Feature summary (v1.0.0)
 
-- **Home** — Continue reading, library preview, and a "Popular on MangaDex" discovery rail.
+- **Home** — Library preview rail plus a **Popular / Latest** discovery feed (chip-pill tabs) shown as a vertical grid that paginates as you scroll.
 - **Search** — Debounced MangaDex search with an infinite-scroll grid and loading/empty/error states.
 - **Details** — Cover, title, authors/artists, status, description, tags, favorite toggle, and the full chapter list with read indicators. External (off-site) chapters open in the browser.
 - **Reader** — Vertical (webtoon) reader with nearby-page preloading, resume-from-last-page, next/previous chapter navigation, and automatic progress saving.

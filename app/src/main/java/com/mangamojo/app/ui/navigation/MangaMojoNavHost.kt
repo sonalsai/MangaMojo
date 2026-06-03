@@ -55,9 +55,6 @@ fun MangaMojoNavHost(navController: NavHostController = rememberNavController())
             composable(Routes.HOME) {
                 HomeScreen(
                     onMangaClick = { navController.navigate(Routes.details(it)) },
-                    onContinueClick = { mangaId, chapterId ->
-                        navController.navigate(Routes.reader(mangaId, chapterId))
-                    },
                     onSeeFavorites = { navController.navigateToTab(Routes.FAVORITES) },
                 )
             }
