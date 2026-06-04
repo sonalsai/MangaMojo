@@ -1,11 +1,13 @@
 package com.mangamojo.app.ui.details
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,26 +16,33 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material3.AssistChip
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -66,6 +75,7 @@ fun DetailsScreen(
                     text = (details as? UiState.Success)?.data?.title ?: "Details",
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Bold,
                 )
             },
             navigationIcon = {
@@ -86,6 +96,12 @@ fun DetailsScreen(
                     }
                 }
             },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                titleContentColor = MaterialTheme.colorScheme.onBackground,
+                navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
+                actionIconContentColor = MaterialTheme.colorScheme.onBackground,
+            ),
             windowInsets = WindowInsets(0, 0, 0, 0),
         )
 
@@ -113,11 +129,24 @@ private fun DetailsContent(
     onOpenExternal: (String) -> Unit,
     onRetryChapters: () -> Unit,
 ) {
+    val chapterList = (chapters as? UiState.Success)?.data.orEmpty()
+    val primaryChapter = chapterList.firstOrNull { !it.isExternal } ?: chapterList.firstOrNull()
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        item { HeaderSection(details) }
+        item {
+            HeaderSection(
+                details = details,
+                primaryChapter = primaryChapter,
+                onStart = { chapter ->
+                    if (chapter.isExternal) onOpenExternal(chapter.externalUrl.orEmpty())
+                    else onChapterClick(chapter.id)
+                },
+            )
+        }
 
         item {
             val count = (chapters as? UiState.Success)?.data?.size
@@ -146,11 +175,10 @@ private fun DetailsContent(
                             chapter = chapter,
                             isRead = chapter.id in readChapterIds,
                             onClick = {
-                                if (chapter.isExternal) onOpenExternal(chapter.externalUrl!!)
+                                if (chapter.isExternal) onOpenExternal(chapter.externalUrl.orEmpty())
                                 else onChapterClick(chapter.id)
                             },
                         )
-                        HorizontalDivider()
                     }
                 }
             }
@@ -159,42 +187,119 @@ private fun DetailsContent(
 }
 
 @Composable
-private fun HeaderSection(details: MangaDetails) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            CoverImage(
-                url = details.coverUrl,
-                contentDescription = details.title,
-                modifier = Modifier.width(120.dp).height(180.dp),
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(details.title, style = MaterialTheme.typography.titleLarge, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                val author = (details.authors + details.artists).distinct().joinToString(", ").ifBlank { "Unknown author" }
-                Text(author, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    AssistChip(onClick = {}, label = { Text(details.status.label) })
-                    details.year?.let { Text(it.toString(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+private fun HeaderSection(
+    details: MangaDetails,
+    primaryChapter: Chapter?,
+    onStart: (Chapter) -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(470.dp),
+    ) {
+        CoverImage(
+            url = details.coverUrl,
+            contentDescription = details.title,
+            cornerRadius = 0,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        0f to MaterialTheme.colorScheme.background.copy(alpha = 0.22f),
+                        0.5f to MaterialTheme.colorScheme.background.copy(alpha = 0.72f),
+                        1f to MaterialTheme.colorScheme.background,
+                    )
+                ),
+        )
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                CoverImage(
+                    url = details.coverUrl,
+                    contentDescription = details.title,
+                    modifier = Modifier.width(118.dp).height(176.dp),
+                    cornerRadius = 10,
+                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        details.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    val author = (details.authors + details.artists)
+                        .distinct()
+                        .joinToString(", ")
+                        .ifBlank { "Unknown author" }
+                    Text(
+                        author,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DetailPill(details.status.label)
+                        details.year?.let { DetailPill(it.toString()) }
+                    }
                 }
             }
-        }
 
-        if (details.tags.isNotEmpty()) {
-            Text(
-                text = details.tags.take(6).joinToString(" · "),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 12.dp),
-            )
-        }
+            Button(
+                onClick = { primaryChapter?.let(onStart) },
+                enabled = primaryChapter != null,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+            ) {
+                Icon(Icons.Rounded.PlayArrow, contentDescription = null)
+                Spacer(Modifier.size(8.dp))
+                Text("Start Reading", fontWeight = FontWeight.Bold)
+            }
 
-        if (details.description.isNotBlank()) {
-            Text(
-                text = details.description,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 12.dp),
-            )
+            if (details.tags.isNotEmpty()) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(details.tags.take(8)) { tag -> DetailPill(tag) }
+                }
+            }
+
+            if (details.description.isNotBlank()) {
+                Text(
+                    text = details.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 5,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun DetailPill(label: String) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.84f), RoundedCornerShape(7.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+    )
 }
 
 @Composable
@@ -203,45 +308,52 @@ private fun ChapterRow(
     isRead: Boolean,
     onClick: () -> Unit,
 ) {
-    Row(
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(10.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = 16.dp)
+            .clickable(onClick = onClick),
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = chapter.label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (isRead) MaterialTheme.colorScheme.onSurfaceVariant
-                else MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = chapter.scanlationGroup,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        if (chapter.isExternal) {
-            Icon(
-                Icons.AutoMirrored.Rounded.OpenInNew,
-                contentDescription = "Opens externally",
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        } else if (isRead) {
-            Icon(
-                Icons.Rounded.CheckCircle,
-                contentDescription = "Read",
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = chapter.label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isRead) MaterialTheme.colorScheme.onSurfaceVariant
+                    else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = chapter.scanlationGroup,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (chapter.isExternal) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.OpenInNew,
+                    contentDescription = "Opens externally",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else if (isRead) {
+                Icon(
+                    Icons.Rounded.CheckCircle,
+                    contentDescription = "Read",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
     }
 }

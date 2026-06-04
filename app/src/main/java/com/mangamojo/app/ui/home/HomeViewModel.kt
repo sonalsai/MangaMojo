@@ -7,10 +7,12 @@ import com.mangamojo.app.core.MangaDex
 import com.mangamojo.app.core.toAppError
 import com.mangamojo.app.domain.model.AppSettings
 import com.mangamojo.app.domain.model.Favorite
+import com.mangamojo.app.domain.model.HistoryEntry
 import com.mangamojo.app.domain.model.Manga
 import com.mangamojo.app.domain.model.SearchQuery
 import com.mangamojo.app.domain.model.SearchSort
 import com.mangamojo.app.domain.usecase.ObserveFavoritesUseCase
+import com.mangamojo.app.domain.usecase.ObserveHistoryUseCase
 import com.mangamojo.app.domain.usecase.ObserveSettingsUseCase
 import com.mangamojo.app.domain.usecase.SearchMangaUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,12 +44,14 @@ data class DiscoverState(
 
 data class HomeUiState(
     val favorites: List<Favorite> = emptyList(),
+    val history: List<HistoryEntry> = emptyList(),
     val discover: DiscoverState = DiscoverState(),
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     observeFavorites: ObserveFavoritesUseCase,
+    observeHistory: ObserveHistoryUseCase,
     private val searchManga: SearchMangaUseCase,
     observeSettings: ObserveSettingsUseCase,
 ) : ViewModel() {
@@ -59,9 +63,10 @@ class HomeViewModel @Inject constructor(
 
     val uiState: StateFlow<HomeUiState> = combine(
         observeFavorites(),
+        observeHistory(),
         discover,
-    ) { favorites, discoverState ->
-        HomeUiState(favorites, discoverState)
+    ) { favorites, history, discoverState ->
+        HomeUiState(favorites, history, discoverState)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     private var offset = 0

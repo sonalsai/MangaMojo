@@ -8,17 +8,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -46,21 +50,26 @@ fun CoverImage(
     )
 }
 
-/** A poster-style card: cover (2:3) + title. */
+/** A poster-style card: cover (2:3), optional badge/rating, title and metadata. */
 @Composable
 fun MangaCard(
     title: String,
     coverUrl: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    badge: String? = null,
+    rating: String? = null,
 ) {
     Column(
         modifier = modifier.clickable(onClick = onClick),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        CoverImage(
-            url = coverUrl,
-            contentDescription = title,
+        PosterCover(
+            title = title,
+            coverUrl = coverUrl,
+            badge = badge,
+            rating = rating,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(2f / 3f),
@@ -68,9 +77,76 @@ fun MangaCard(
         Text(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
+        if (subtitle != null) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PosterCover(
+    title: String,
+    coverUrl: String?,
+    badge: String?,
+    rating: String?,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier.clip(RoundedCornerShape(10.dp))) {
+        CoverImage(
+            url = coverUrl,
+            contentDescription = title,
+            modifier = Modifier.fillMaxWidth().aspectRatio(2f / 3f),
+            cornerRadius = 10,
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    Brush.verticalGradient(
+                        0f to MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                        1f to MaterialTheme.colorScheme.background.copy(alpha = 0.84f),
+                    )
+                ),
+        )
+        if (badge != null) {
+            Text(
+                text = badge,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(7.dp)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(5.dp))
+                    .padding(horizontal = 7.dp, vertical = 3.dp),
+            )
+        }
+        if (rating != null) {
+            Surface(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f),
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.align(Alignment.BottomStart).padding(7.dp),
+            ) {
+                Text(
+                    text = rating,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                )
+            }
+        }
     }
 }
 
@@ -85,11 +161,15 @@ fun SectionHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
         if (actionLabel != null && onAction != null) {
             Text(
                 text = actionLabel,
@@ -112,36 +192,16 @@ fun RailCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    badge: String? = null,
 ) {
-    Column(
-        modifier = modifier
-            .width(124.dp)
-            .clickable(onClick = onClick),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        CoverImage(
-            url = coverUrl,
-            contentDescription = title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(2f / 3f),
-        )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        if (subtitle != null) {
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
+    MangaCard(
+        title = title,
+        coverUrl = coverUrl,
+        subtitle = subtitle,
+        badge = badge,
+        onClick = onClick,
+        modifier = modifier.width(132.dp),
+    )
 }
 
 /** Progress bar overlay used on "Continue reading" cards. */
@@ -156,9 +216,10 @@ fun ProgressOverlayCard(
 ) {
     Column(
         modifier = modifier
-            .width(140.dp)
+            .width(220.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Box {
             CoverImage(
@@ -166,31 +227,37 @@ fun ProgressOverlayCard(
                 contentDescription = title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(2f / 3f),
+                    .height(124.dp),
+                cornerRadius = 10,
             )
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth(progress.coerceIn(0f, 1f))
-                    .padding(2.dp)
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp))
-                    .padding(vertical = 2.dp),
+                    .height(4.dp)
+                    .background(MaterialTheme.colorScheme.primary),
             )
         }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        if (subtitle != null) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
             Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }

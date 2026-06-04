@@ -11,6 +11,7 @@ import com.mangamojo.app.core.MangaDex
 import com.mangamojo.app.domain.model.AppSettings
 import com.mangamojo.app.domain.model.ReadingDirection
 import com.mangamojo.app.domain.model.ThemeMode
+import com.mangamojo.app.domain.model.ThemePalette
 import com.mangamojo.app.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -26,6 +27,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     private object Keys {
         val THEME = stringPreferencesKey("theme_mode")
+        val THEME_PALETTE = stringPreferencesKey("theme_palette")
         val DIRECTION = stringPreferencesKey("reading_direction")
         val DATA_SAVER = booleanPreferencesKey("data_saver")
         val CONTENT_RATINGS = stringSetPreferencesKey("content_ratings")
@@ -36,7 +38,8 @@ class SettingsRepositoryImpl @Inject constructor(
         .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
         .map { prefs ->
             AppSettings(
-                themeMode = prefs[Keys.THEME].toEnum(ThemeMode.SYSTEM),
+                themeMode = prefs[Keys.THEME].toEnum(ThemeMode.DARK),
+                themePalette = prefs[Keys.THEME_PALETTE].toEnum(ThemePalette.SHONEN_CRIMSON),
                 readingDirection = prefs[Keys.DIRECTION].toEnum(ReadingDirection.VERTICAL),
                 dataSaver = prefs[Keys.DATA_SAVER] ?: false,
                 contentRatings = prefs[Keys.CONTENT_RATINGS] ?: MangaDex.DEFAULT_CONTENT_RATINGS.toSet(),
@@ -46,6 +49,10 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { it[Keys.THEME] = mode.name }
+    }
+
+    override suspend fun setThemePalette(palette: ThemePalette) {
+        dataStore.edit { it[Keys.THEME_PALETTE] = palette.name }
     }
 
     override suspend fun setReadingDirection(direction: ReadingDirection) {

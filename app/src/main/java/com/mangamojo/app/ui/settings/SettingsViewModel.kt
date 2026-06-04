@@ -6,6 +6,7 @@ import com.mangamojo.app.core.MangaDex
 import com.mangamojo.app.domain.model.AppSettings
 import com.mangamojo.app.domain.model.ReadingDirection
 import com.mangamojo.app.domain.model.ThemeMode
+import com.mangamojo.app.domain.model.ThemePalette
 import com.mangamojo.app.domain.usecase.ClearCacheUseCase
 import com.mangamojo.app.domain.usecase.ClearFavoritesUseCase
 import com.mangamojo.app.domain.usecase.ClearHistoryUseCase
@@ -15,6 +16,7 @@ import com.mangamojo.app.domain.usecase.SetContentRatingsUseCase
 import com.mangamojo.app.domain.usecase.SetDataSaverUseCase
 import com.mangamojo.app.domain.usecase.SetReadingDirectionUseCase
 import com.mangamojo.app.domain.usecase.SetThemeModeUseCase
+import com.mangamojo.app.domain.usecase.SetThemePaletteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +29,7 @@ class SettingsViewModel @Inject constructor(
     observeSettings: ObserveSettingsUseCase,
     observeCachedCount: ObserveCachedCountUseCase,
     private val setThemeMode: SetThemeModeUseCase,
+    private val setThemePalette: SetThemePaletteUseCase,
     private val setReadingDirection: SetReadingDirectionUseCase,
     private val setDataSaver: SetDataSaverUseCase,
     private val setContentRatings: SetContentRatingsUseCase,
@@ -43,6 +46,9 @@ class SettingsViewModel @Inject constructor(
 
     fun onThemeModeChange(mode: ThemeMode) = viewModelScope.launch { setThemeMode(mode) }
 
+    fun onThemePaletteChange(palette: ThemePalette) =
+        viewModelScope.launch { setThemePalette(palette) }
+
     fun onReadingDirectionChange(direction: ReadingDirection) =
         viewModelScope.launch { setReadingDirection(direction) }
 
@@ -51,7 +57,7 @@ class SettingsViewModel @Inject constructor(
     fun onToggleContentRating(rating: String) {
         val current = settings.value.contentRatings
         val next = if (rating in current) current - rating else current + rating
-        // Never allow an empty set — fall back to the safe default.
+        // Never allow an empty set; fall back to the safe default.
         val safe = next.ifEmpty { MangaDex.DEFAULT_CONTENT_RATINGS.toSet() }
         viewModelScope.launch { setContentRatings(safe) }
     }

@@ -17,10 +17,11 @@ later without schema changes.
 | `ReadingProgress` | `mangaId, chapterId, page, total, completed, updatedAt` |
 | `Favorite` | `mangaId, sourceId, title, coverUrl, status, addedAt` |
 | `HistoryEntry` | `mangaId, sourceId, title, coverUrl, chapterId, chapterLabel, page, total, readAt`; `isCompleted`, `progressFraction` |
-| `AppSettings` | `themeMode, readingDirection, dataSaver, contentRatings, translatedLanguage` |
+| `AppSettings` | `themeMode, themePalette, readingDirection, dataSaver, contentRatings, translatedLanguage` |
 
 **Enums:** `MangaStatus` (ONGOING/COMPLETED/HIATUS/CANCELLED/UNKNOWN, with `from(raw)`),
-`ThemeMode` (SYSTEM/LIGHT/DARK), `ReadingDirection` (VERTICAL/LTR/RTL),
+`ThemeMode` (SYSTEM/LIGHT/DARK), `ThemePalette` (SHONEN_CRIMSON/NEON_CYBERPUNK/RETRO_SHONEN/MYSTICAL_DARK_SAGE),
+`ReadingDirection` (VERTICAL/LTR/RTL),
 `SearchSort` (RELEVANCE/POPULAR/LATEST/NEWEST/RATING — each maps to MangaDex `order[...]`).
 
 ## Room schema (`mangamojo.db`, version 1)
@@ -45,7 +46,8 @@ migrations needed yet). Real migrations will be added when the schema changes.
 
 | Key | Type | Default |
 | --- | --- | --- |
-| `theme_mode` | String (`ThemeMode`) | `SYSTEM` |
+| `theme_mode` | String (`ThemeMode`) | `DARK` |
+| `theme_palette` | String (`ThemePalette`) | `SHONEN_CRIMSON` |
 | `reading_direction` | String (`ReadingDirection`) | `VERTICAL` |
 | `data_saver` | Boolean | `false` |
 | `content_ratings` | String set | `["safe", "suggestive"]` |

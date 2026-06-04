@@ -26,7 +26,7 @@ object Routes {
     fun reader(mangaId: String, chapterId: String): String = "reader/$mangaId/$chapterId"
 }
 
-/** Tabs shown in the bottom navigation bar. */
+/** Tabs shown in the side navigation drawer. */
 enum class TopLevelDestination(
     val route: String,
     val label: String,

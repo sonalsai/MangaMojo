@@ -29,7 +29,7 @@ bookmarks, reading progress, cached metadata) lives on-device.
 - **Details** — Cover, title, authors/artists, status, description, tags, favorite toggle, and the full chapter list with read indicators. External (off-site) chapters open in the browser.
 - **Reader** — Vertical (webtoon) reader with nearby-page preloading, resume-from-last-page, next/previous chapter navigation, and automatic progress saving.
 - **Library / History** — Reactive favorites and reading history, each clearable.
-- **Settings** — Theme (system/light/dark), reading-direction placeholder, data saver, content ratings, and clear cache/history/favorites.
+- **Settings** — Theme mode, color theme, reading-direction placeholder, data saver, content ratings, and clear cache/history/favorites.
 - **Background** — WorkManager jobs for periodic cache cleanup and favorites refresh.
 
 ---

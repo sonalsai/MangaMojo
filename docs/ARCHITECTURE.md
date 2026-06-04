@@ -144,8 +144,8 @@ Room database `mangamojo.db` (see [DATA_MODEL.md](DATA_MODEL.md) for the full sc
 - **Cache tables** — `cached_manga`, `cached_chapters` (each row stamped with `cachedAt`).
 - **User tables** — `favorites`, `history` (one row per manga), `reading_progress`
   (per chapter), `bookmarks`.
-- **Settings** — DataStore Preferences (`mangamojo_settings`): theme, reading direction,
-  data saver, content ratings, translated language.
+- **Settings** — DataStore Preferences (`mangamojo_settings`): theme mode, color theme,
+  reading direction, data saver, content ratings, translated language.
 
 **Cache policy** (`core/CachePolicy`):
 - Manga metadata fresh for **12 h**, chapter feed fresh for **6 h**.
@@ -188,7 +188,7 @@ Both are `@HiltWorker` `CoroutineWorker`s and are best-effort (`Result.retry()` 
 - Each screen has a paired `@HiltViewModel` exposing immutable state via `StateFlow`.
 - One-payload screens use the generic sealed `UiState<T>` (`Loading`/`Success`/`Error`);
   list screens use flat, immutable state data classes.
-- The app uses a fixed brand palette (not dynamic color) driven by the user's `ThemeMode`,
-  for a consistent reader look across devices.
+- The app uses fixed brand palettes (not dynamic color) driven by the user's `ThemeMode`
+  and `ThemePalette`, for a consistent reader look across devices.
 - A single top-level `Scaffold` owns the bottom navigation; screens render their own
   `TopAppBar`. Insets are handled once via the host `Scaffold` padding.

@@ -25,6 +25,7 @@ import javax.inject.Inject
 
 data class SearchUiState(
     val query: String = "",
+    val sort: SearchSort = SearchSort.RELEVANCE,
     val items: List<Manga> = emptyList(),
     val loading: Boolean = false,
     val loadingMore: Boolean = false,
@@ -52,12 +53,21 @@ class SearchViewModel @Inject constructor(
         _state.update { it.copy(query = query) }
         searchJob?.cancel()
         if (query.isBlank()) {
-            _state.update { SearchUiState(query = query) }
+            _state.update { SearchUiState(query = query, sort = it.sort) }
             return
         }
         searchJob = viewModelScope.launch {
             delay(350) // debounce keystrokes
             runSearch(reset = true)
+        }
+    }
+
+    fun onSortChange(sort: SearchSort) {
+        if (_state.value.sort == sort) return
+        _state.update { it.copy(sort = sort) }
+        if (_state.value.query.isNotBlank()) {
+            searchJob?.cancel()
+            searchJob = viewModelScope.launch { runSearch(reset = true) }
         }
     }
 
@@ -89,7 +99,7 @@ class SearchViewModel @Inject constructor(
                     title = query,
                     offset = offset,
                     contentRatings = ratings,
-                    sort = SearchSort.RELEVANCE,
+                    sort = _state.value.sort,
                 )
             )
             offset = result.nextOffset

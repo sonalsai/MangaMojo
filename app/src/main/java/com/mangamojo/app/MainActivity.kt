@@ -22,9 +22,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
-            val themeMode by mainViewModel.themeMode.collectAsStateWithLifecycle()
+            val settings by mainViewModel.settings.collectAsStateWithLifecycle()
 
-            MangaMojoTheme(themeMode = themeMode) {
+            MangaMojoTheme(
+                themeMode = settings.themeMode,
+                themePalette = settings.themePalette,
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
